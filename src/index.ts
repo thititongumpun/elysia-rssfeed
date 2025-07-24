@@ -13,7 +13,7 @@ const app = new Elysia()
   .use(
     cron({
       name: "rss-job",
-      pattern: Patterns.EVERY_10_SECONDS,
+      pattern: Patterns.EVERY_3_HOURS,
       timezone: "Asia/Bangkok",
       run: async () => {
         const parser = new Parser();
