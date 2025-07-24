@@ -1,4 +1,4 @@
-FROM oven/bun AS build
+FROM oven/bun:alpine AS build
 
 WORKDIR /app
 
@@ -6,7 +6,12 @@ WORKDIR /app
 COPY package.json package.json
 COPY bun.lock bun.lock
 
-RUN bun install
+# Install necessary packages for esbuild to work on Alpine
+RUN apk add --no-cache curl
+
+# Force Bun to skip verification
+ENV ESBUILD_BINARY_PATH=/usr/local/bin/esbuild
+RUN bun install --no-verify
 
 COPY ./src ./src
 
@@ -20,13 +25,19 @@ RUN bun build \
 	--outfile server \
 	./src/index.ts
 
-FROM gcr.io/distroless/base
+FROM oven/bun:alpine
 
 WORKDIR /app
+
+# Install curl in the final image for healthcheck
+RUN apk add --no-cache curl
 
 COPY --from=build /app/server server
 
 ENV NODE_ENV=production
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000 || exit 1
 
 CMD ["./server"]
 
