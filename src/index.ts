@@ -80,7 +80,6 @@ const app = new Elysia()
           })
         );
 
-        // Separate new records from existing ones
         const newRecords = data.filter(item => !item.isExisting).map(item => ({
           fields: {
             title: item.title,
