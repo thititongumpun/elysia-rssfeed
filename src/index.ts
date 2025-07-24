@@ -17,7 +17,7 @@ const app = new Elysia()
       timezone: "Asia/Bangkok",
       run: async () => {
         const parser = new Parser();
-        const feed = await parser.parseURL('https://www.bangkokpost.com/rss/data/sports.xml');
+        const feed = await parser.parseURL('https://bangkokpost-proxy.thiti180536842.workers.dev');
         const entries = {
           items: feed.items.map(item => {
             return {

@@ -1,6 +1,6 @@
 services:
   rssfeed:
-    build: .
+    image: ${DOCKER_IMAGE:-thititongumpun/elysia-rssfeed}:${CONTAINER_VERSION:-latest}
     container_name: rssfeed
     restart: always
     env_file:
