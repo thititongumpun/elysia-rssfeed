@@ -102,14 +102,18 @@ export abstract class AirTableService {
     try {
       // Create new records
       if (newRecords.length > 0) {
-        console.log(`Creating ${newRecords.length} new records...`);
+        console.log(`Creating ${newRecords.length} new records... at ${new Date().toLocaleString('th-TH', {
+          timeZone: 'Asia/Bangkok',
+        })}`);
         await table.create(newRecords as any);
         console.log('New records created successfully');
       }
 
       // Update existing records
       if (updateRecords.length > 0) {
-        console.log(`Updating ${updateRecords.length} existing records...`);
+        console.log(`Updating ${updateRecords.length} existing records... at ${new Date().toLocaleString('th-TH', {
+          timeZone: 'Asia/Bangkok',
+        })}`);
         await table.update(updateRecords as any);
         console.log('Existing records updated successfully');
       }
