@@ -6,7 +6,7 @@ export const feed = new Elysia({ prefix: '/feed' })
   .get(
     '',
     async () => {
-      await AirTableService.createRecord()
+      const data = await AirTableService.getList()
       return "ok"
     }
   )

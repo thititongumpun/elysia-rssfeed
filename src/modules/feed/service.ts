@@ -5,12 +5,29 @@ import * as cheerio from 'cheerio';
 export abstract class AirTableService {
   static async getList() {
     const base = new AirTable({ apiKey: Bun.env.API_KEY }).base('appdVt2WrWyPcSSuA');
-    await base('bangkokpost Table').select().eachPage((records, fetchNextPage) => {
+    const records = await base('bangkokpost').select({
+      fields: ['title', 'link', 'imageUrl', 'pubDate', 'used'],
+      filterByFormula: 'NOT({used})',
+      maxRecords: 10,
+      sort: [{
+        field: 'pubDate',
+        direction: 'desc'
+      }]
+    }).eachPage((records, fetchNextPage) => {
       records.map((record) => {
-        console.log('Retrieved', record.get('name'));
+        if (record) {
+          console.log('not record');
+          fetch('https://n8n.wcydtt.co/webhook-test/rsspost', {
+            headers: {
+              'x-api-key': Bun.env.X_API_KEY
+            }
+          })
+        }
       })
       fetchNextPage();
     })
+
+    return records;
   }
 
   static async createRecord() {

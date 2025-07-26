@@ -12,6 +12,37 @@ const app = new Elysia()
   .use(feed)
   .use(
     cron({
+      name: "fetch-news-sports",
+      // pattern: Patterns.EVERY_HOUR,
+      pattern: Patterns.EVERY_5_SECONDS,
+      run: async () => {
+        const base = new AirTable({ apiKey: Bun.env.API_KEY }).base('appdVt2WrWyPcSSuA');
+        await base('bangkokpost').select({
+          fields: ['title', 'link', 'imageUrl', 'pubDate', 'used'],
+          filterByFormula: 'NOT({used})',
+          maxRecords: 10,
+          sort: [{
+            field: 'pubDate',
+            direction: 'desc'
+          }]
+        }).eachPage((records, fetchNextPage) => {
+          records.map(async (record) => {
+            console.log('checking new posts.');
+            if (record) {
+              await fetch('https://n8n.wcydtt.co/webhook/rsspost', {
+                headers: {
+                  'x-api-key': Bun.env.X_API_KEY
+                }
+              })
+            }
+          })
+          fetchNextPage();
+        })
+      }
+    })
+  )
+  .use(
+    cron({
       name: "rss-job",
       pattern: Patterns.EVERY_3_HOURS,
       timezone: "Asia/Bangkok",
