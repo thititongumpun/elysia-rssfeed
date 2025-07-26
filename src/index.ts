@@ -38,10 +38,10 @@ const app = new Elysia()
           fetchNextPage();
         })
 
-        console.log(`checking new 90minposts... at ${new Date().toLocaleString('th-TH', {
+        console.log(`checking new thailand... at ${new Date().toLocaleString('th-TH', {
           timeZone: 'Asia/Bangkok',
         })}`);
-        await base('90min').select({
+        await base('bkpostthailand').select({
           fields: ['title', 'link', 'imageUrl', 'pubDate', 'used'],
           filterByFormula: 'NOT({used})',
           maxRecords: 10,
@@ -51,7 +51,7 @@ const app = new Elysia()
           }]
         }).eachPage(async (records, fetchNextPage) => {
           if (records.length > 0) {
-            await fetch('https://n8n.wcydtt.co/webhook/90minrsspost', {
+            await fetch('https://n8n.wcydtt.co/webhook/bkpostthailand', {
               headers: {
                 'x-api-key': Bun.env.X_API_KEY
               }
@@ -64,12 +64,12 @@ const app = new Elysia()
   )
   .use(
     cron({
-      name: "90minrss-job",
-      pattern: Patterns.EVERY_6_HOURS,
+      name: "bangkokpost-job",
+      pattern: Patterns.EVERY_30_MINUTES,
       timezone: "Asia/Bangkok",
       run: async () => {
         const parser = new Parser();
-        const feed = await parser.parseURL('https://www.90min.com/posts.rss?limit=10');
+        const feed = await parser.parseURL('https://bangkokpostthailand-proxy.thiti180536842.workers.dev/');
         const entries = {
           items: feed.items.map(item => {
             return {
@@ -82,7 +82,7 @@ const app = new Elysia()
         }
 
         const base = new AirTable({ apiKey: Bun.env.API_KEY }).base('appdVt2WrWyPcSSuA');
-        const table = base('90min');
+        const table = base('bkpostthailand');
 
         const existingRecords = await table.select({
           fields: ['title', 'link', 'imageUrl', 'pubDate', 'used']
@@ -313,3 +313,5 @@ const app = new Elysia()
 console.log(
   `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
 );
+
+// bkpostthailand
