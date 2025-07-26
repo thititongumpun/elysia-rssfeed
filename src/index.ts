@@ -13,7 +13,7 @@ const app = new Elysia()
   .use(
     cron({
       name: "fetch-news-sports",
-      pattern: Patterns.EVERY_HOUR,
+      pattern: Patterns.EVERY_30_MINUTES,
       run: async () => {
         console.log(`checking new posts... at ${new Date().toLocaleString('th-TH', {
           timeZone: 'Asia/Bangkok',
@@ -162,7 +162,7 @@ const app = new Elysia()
               timeZone: 'Asia/Bangkok',
             })}`);
             await table.create(newRecords as any);
-            console.log('90min New records created successfully');
+            console.log('thailandpost New records created successfully');
           }
 
           // Update existing records
@@ -171,7 +171,7 @@ const app = new Elysia()
               timeZone: 'Asia/Bangkok',
             })} `);
             await table.update(updateRecords as any);
-            console.log('90min Existing records updated successfully');
+            console.log('thailandpost Existing records updated successfully');
           }
 
           if (newRecords.length === 0 && updateRecords.length === 0) {
