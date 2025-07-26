@@ -16,7 +16,6 @@ export abstract class AirTableService {
     }).eachPage((records, fetchNextPage) => {
       records.map((record) => {
         if (record) {
-          console.log('not record');
           fetch('https://n8n.wcydtt.co/webhook-test/rsspost', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
@@ -53,7 +52,7 @@ export abstract class AirTableService {
 
     // Create a map of existing titles to their record IDs
     const existingTitlesMap = new Map();
-    existingRecords.forEach(record => {
+    existingRecords.map(record => {
       if (record.fields.title) {
         existingTitlesMap.set(record.fields.title, record.id);
       }

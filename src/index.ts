@@ -62,12 +62,12 @@ const app = new Elysia()
         const table = base('bangkokpost');
 
         const existingRecords = await table.select({
-          fields: ['title', 'link', 'imageUrl', 'pubDate']
+          fields: ['title', 'link', 'imageUrl', 'pubDate', 'used']
         }).all();
 
         // Create a map of existing titles to their record IDs
         const existingTitlesMap = new Map();
-        existingRecords.forEach(record => {
+        existingRecords.map(record => {
           if (record.fields.title) {
             existingTitlesMap.set(record.fields.title, record.id);
           }
@@ -110,14 +110,22 @@ const app = new Elysia()
           })
         );
 
-        const newRecords = data.filter(item => !item.isExisting).map(item => ({
-          fields: {
+
+        const newRecords = data.filter(item => !item.isExisting).map(item => {
+          const fields = {
             title: item.title,
             link: item.link,
             imageUrl: item.imageUrl,
-            pubDate: item.pubDate
+            pubDate: item.pubDate,
+            used: false
           }
-        }));
+
+          if (item.imageUrl?.includes('/bangkokpost-proxy') && item.imageUrl.includes('default')) {
+            fields.used = true;
+          }
+
+          return { fields };
+        })
 
         const updateRecords = data.filter(item => item.isExisting).map(item => ({
           id: item.recordId,
