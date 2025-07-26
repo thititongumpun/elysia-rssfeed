@@ -15,6 +15,9 @@ const app = new Elysia()
       name: "fetch-news-sports",
       pattern: Patterns.EVERY_HOUR,
       run: async () => {
+        console.log(`checking new posts... at ${new Date().toLocaleString('th-TH', {
+          timeZone: 'Asia/Bangkok',
+        })}`);
         const base = new AirTable({ apiKey: Bun.env.API_KEY }).base('appdVt2WrWyPcSSuA');
         await base('bangkokpost').select({
           fields: ['title', 'link', 'imageUrl', 'pubDate', 'used'],
@@ -26,7 +29,6 @@ const app = new Elysia()
           }]
         }).eachPage((records, fetchNextPage) => {
           records.map(async (record) => {
-            console.log('checking new posts.');
             if (record) {
               await fetch('https://n8n.wcydtt.co/webhook/rsspost', {
                 headers: {
