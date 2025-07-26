@@ -13,8 +13,7 @@ const app = new Elysia()
   .use(
     cron({
       name: "fetch-news-sports",
-      // pattern: Patterns.EVERY_HOUR,
-      pattern: Patterns.EVERY_5_SECONDS,
+      pattern: Patterns.EVERY_HOUR,
       run: async () => {
         const base = new AirTable({ apiKey: Bun.env.API_KEY }).base('appdVt2WrWyPcSSuA');
         await base('bangkokpost').select({
