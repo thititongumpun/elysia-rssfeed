@@ -7,6 +7,7 @@ export const feed = new Elysia({ prefix: '/feed' })
     '',
     async () => {
       const data = await AirTableService.getList()
+
       return "ok"
     }
   )
