@@ -27,16 +27,14 @@ const app = new Elysia()
             field: 'pubDate',
             direction: 'desc'
           }]
-        }).eachPage((records, fetchNextPage) => {
-          records.map(async (record) => {
-            if (record) {
-              await fetch('https://n8n.wcydtt.co/webhook/rsspost', {
-                headers: {
-                  'x-api-key': Bun.env.X_API_KEY
-                }
-              })
-            }
-          })
+        }).eachPage(async (records, fetchNextPage) => {
+          if (records.length > 0) {
+            await fetch('https://n8n.wcydtt.co/webhook/rsspost', {
+              headers: {
+                'x-api-key': Bun.env.X_API_KEY
+              }
+            })
+          }
           fetchNextPage();
         })
 
@@ -51,16 +49,14 @@ const app = new Elysia()
             field: 'pubDate',
             direction: 'desc'
           }]
-        }).eachPage((records, fetchNextPage) => {
-          records.map(async (record) => {
-            if (record) {
-              await fetch('https://n8n.wcydtt.co/webhook/90minrsspost', {
-                headers: {
-                  'x-api-key': Bun.env.X_API_KEY
-                }
-              })
-            }
-          })
+        }).eachPage(async (records, fetchNextPage) => {
+          if (records.length > 0) {
+            await fetch('https://n8n.wcydtt.co/webhook/90minrsspost', {
+              headers: {
+                'x-api-key': Bun.env.X_API_KEY
+              }
+            })
+          }
           fetchNextPage();
         })
       }
@@ -166,7 +162,7 @@ const app = new Elysia()
               timeZone: 'Asia/Bangkok',
             })}`);
             await table.create(newRecords as any);
-            console.log('New records created successfully');
+            console.log('90min New records created successfully');
           }
 
           // Update existing records
@@ -175,7 +171,7 @@ const app = new Elysia()
               timeZone: 'Asia/Bangkok',
             })} `);
             await table.update(updateRecords as any);
-            console.log('Existing records updated successfully');
+            console.log('90min Existing records updated successfully');
           }
 
           if (newRecords.length === 0 && updateRecords.length === 0) {
@@ -291,7 +287,7 @@ const app = new Elysia()
               timeZone: 'Asia/Bangkok',
             })}`);
             await table.create(newRecords as any);
-            console.log('New records created successfully');
+            console.log('bangkokpost New records created successfully');
           }
 
           // Update existing records
@@ -300,7 +296,7 @@ const app = new Elysia()
               timeZone: 'Asia/Bangkok',
             })} `);
             await table.update(updateRecords as any);
-            console.log('Existing records updated successfully');
+            console.log('bangkokpost Existing records updated successfully');
           }
 
           if (newRecords.length === 0 && updateRecords.length === 0) {
