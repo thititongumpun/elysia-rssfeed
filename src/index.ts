@@ -6,6 +6,8 @@ import * as cheerio from 'cheerio';
 import { feed } from "./modules/feed";
 import cron, { Patterns } from "@elysiajs/cron";
 import { logger } from "@bogeychan/elysia-logger";
+import { Api } from "nocodb-sdk";
+import { NewsItem } from "./type";
 
 const app = new Elysia()
   .use(
@@ -37,18 +39,24 @@ const app = new Elysia()
           })
         }
 
-        const base = new AirTable({ apiKey: Bun.env.API_KEY }).base('appdVt2WrWyPcSSuA');
-        const table = base('bkpostthailand');
+        const api = new Api({
+          baseURL: Bun.env.NOCO_BASEURL,
+          headers: {
+            'xc-token': Bun.env.NOCO_APIKEY
+          }
+        });
 
-        const existingRecords = await table.select({
-          fields: ['title', 'link', 'imageUrl', 'pubDate', 'used']
-        }).all();
+        const existingRecords = await api.dbTableRow.list('bkpostthailand', 'pwqy2nqxf377iwy', 'bkpostthailand', {
+          sort: '-pubDate',
+          limit: 10
+        })
 
         // Create a map of existing titles to their record IDs
+        const rows = existingRecords.list as NewsItem[];
         const existingTitlesMap = new Map();
-        existingRecords.map(record => {
-          if (record.fields.title) {
-            existingTitlesMap.set(record.fields.title, record.id);
+        rows.map(record => {
+          if (record.title) {
+            existingTitlesMap.set(record.title, record.ncRecordId);
           }
         });
 
@@ -90,26 +98,25 @@ const app = new Elysia()
         );
 
         const newRecords = data.filter(item => !item.isExisting).map(item => {
-          const fields = {
+          return {
             title: item.title,
             link: item.link,
             imageUrl: item.imageUrl,
             pubDate: item.pubDate,
             used: false
           }
-
-          return { fields };
         })
 
-        const updateRecords = data.filter(item => item.isExisting).map(item => ({
-          id: item.recordId,
-          fields: {
+
+        const updateRecords = data.filter(item => item.isExisting).map(item => {
+          return {
+            id: item.recordId,
             title: item.title,
             link: item.link,
             imageUrl: item.imageUrl,
             pubDate: item.pubDate
           }
-        }));
+        })
 
         try {
           // Create new records
@@ -117,7 +124,12 @@ const app = new Elysia()
             console.log(`Creating ${newRecords.length} new records... at ${new Date().toLocaleString('th-TH', {
               timeZone: 'Asia/Bangkok',
             })}`);
-            await table.create(newRecords as any);
+            await api.dbTableRow.bulkCreate(
+              'bkpostthailand',
+              'pwqy2nqxf377iwy',
+              'bkpostthailand',
+              newRecords
+            )
             console.log('thailandpost New records created successfully');
           }
 
@@ -126,7 +138,12 @@ const app = new Elysia()
             console.log(`Updating ${updateRecords.length} existing records... at ${new Date().toLocaleString('th-TH', {
               timeZone: 'Asia/Bangkok',
             })} `);
-            await table.update(updateRecords as any);
+            await api.dbTableRow.bulkUpdate(
+              'bkpostthailand',
+              'pwqy2nqxf377iwy',
+              'bkpostthailand',
+              updateRecords,
+            )
             console.log('thailandpost Existing records updated successfully');
           }
 
@@ -157,18 +174,24 @@ const app = new Elysia()
             }
           })
         }
-        const base = new AirTable({ apiKey: Bun.env.API_KEY }).base('appdVt2WrWyPcSSuA');
-        const table = base('bangkokpost');
+        const api = new Api({
+          baseURL: Bun.env.NOCO_BASEURL,
+          headers: {
+            'xc-token': Bun.env.NOCO_APIKEY
+          }
+        });
 
-        const existingRecords = await table.select({
-          fields: ['title', 'link', 'imageUrl', 'pubDate', 'used']
-        }).all();
+        const existingRecords = await api.dbTableRow.list('bangkokpost', 'pwqy2nqxf377iwy', 'bangkokpost', {
+          sort: '-pubDate',
+          limit: 10
+        })
 
         // Create a map of existing titles to their record IDs
+        const rows = existingRecords.list as NewsItem[];
         const existingTitlesMap = new Map();
-        existingRecords.map(record => {
-          if (record.fields.title) {
-            existingTitlesMap.set(record.fields.title, record.id);
+        rows.map(record => {
+          if (record.title) {
+            existingTitlesMap.set(record.title, record.ncRecordId);
           }
         });
 
@@ -209,32 +232,26 @@ const app = new Elysia()
           })
         );
 
-
         const newRecords = data.filter(item => !item.isExisting).map(item => {
-          const fields = {
+          return {
             title: item.title,
             link: item.link,
             imageUrl: item.imageUrl,
             pubDate: item.pubDate,
             used: false
           }
-
-          if (item.imageUrl?.includes('/bangkokpost-proxy') && item.imageUrl.includes('default')) {
-            fields.used = true;
-          }
-
-          return { fields };
         })
 
-        const updateRecords = data.filter(item => item.isExisting).map(item => ({
-          id: item.recordId,
-          fields: {
+
+        const updateRecords = data.filter(item => item.isExisting).map(item => {
+          return {
+            id: item.recordId,
             title: item.title,
             link: item.link,
             imageUrl: item.imageUrl,
             pubDate: item.pubDate
           }
-        }));
+        })
 
         try {
           // Create new records
@@ -242,7 +259,12 @@ const app = new Elysia()
             console.log(`Creating ${newRecords.length} new records... at ${new Date().toLocaleString('th-TH', {
               timeZone: 'Asia/Bangkok',
             })}`);
-            await table.create(newRecords as any);
+            await api.dbTableRow.bulkCreate(
+              'bangkokpost',
+              'pwqy2nqxf377iwy',
+              'bangkokpost',
+              newRecords
+            )
             console.log('bangkokpost New records created successfully');
           }
 
@@ -251,7 +273,12 @@ const app = new Elysia()
             console.log(`Updating ${updateRecords.length} existing records... at ${new Date().toLocaleString('th-TH', {
               timeZone: 'Asia/Bangkok',
             })} `);
-            await table.update(updateRecords as any);
+            await api.dbTableRow.bulkUpdate(
+              'bangkokpost',
+              'pwqy2nqxf377iwy',
+              'bangkokpost',
+              updateRecords,
+            )
             console.log('bangkokpost Existing records updated successfully');
           }
 
@@ -266,53 +293,46 @@ const app = new Elysia()
   )
   .use(
     cron({
-      name: "fetch-news-sports",
+      name: "fetch-news",
       pattern: Patterns.EVERY_30_MINUTES,
       run: async () => {
-        console.log(`checking new posts... at ${new Date().toLocaleString('th-TH', {
+        console.log(`checking news posts... at ${new Date().toLocaleString('th-TH', {
           timeZone: 'Asia/Bangkok',
         })}`);
-        const base = new AirTable({ apiKey: Bun.env.API_KEY }).base('appdVt2WrWyPcSSuA');
-        await base('bangkokpost').select({
-          fields: ['title', 'link', 'imageUrl', 'pubDate', 'used'],
-          filterByFormula: 'NOT({used})',
-          maxRecords: 10,
-          sort: [{
-            field: 'pubDate',
-            direction: 'desc'
-          }]
-        }).eachPage(async (records, fetchNextPage) => {
-          if (records.length > 0) {
-            await fetch('https://n8n.wcydtt.co/webhook/rsspost', {
-              headers: {
-                'x-api-key': Bun.env.X_API_KEY
-              }
-            })
+        const api = new Api({
+          baseURL: Bun.env.NOCO_BASEURL,
+          headers: {
+            'xc-token': Bun.env.NOCO_APIKEY
           }
-          fetchNextPage();
+        });
+        const bangkokpostData = await api.dbTableRow.list('bangkokpost', 'pwqy2nqxf377iwy', 'bangkokpost', {
+          where: '(used,eq,false)',
+          sort: '-pubDate',
+          limit: 10
         })
+        if (bangkokpostData.list.length > 0) {
+          await fetch('https://n8n.wcydtt.co/webhook/rsspost', {
+            headers: {
+              'x-api-key': Bun.env.X_API_KEY
+            }
+          })
+        }
 
-        console.log(`checking new thailand... at ${new Date().toLocaleString('th-TH', {
+        console.log(`checking news thailand... at ${new Date().toLocaleString('th-TH', {
           timeZone: 'Asia/Bangkok',
         })}`);
-        await base('bkpostthailand').select({
-          fields: ['title', 'link', 'imageUrl', 'pubDate', 'used'],
-          filterByFormula: 'NOT({used})',
-          maxRecords: 10,
-          sort: [{
-            field: 'pubDate',
-            direction: 'desc'
-          }]
-        }).eachPage(async (records, fetchNextPage) => {
-          if (records.length > 0) {
-            await fetch('https://n8n.wcydtt.co/webhook/bkpostthailand', {
-              headers: {
-                'x-api-key': Bun.env.X_API_KEY
-              }
-            })
-          }
-          fetchNextPage();
+        const bkpostthailandData = await api.dbTableRow.list('bkpostthailand', 'pwqy2nqxf377iwy', 'bkpostthailand', {
+          where: '(used,eq,false)',
+          sort: '-pubDate',
+          limit: 10
         })
+        if (bkpostthailandData.list.length > 0) {
+          await fetch('https://n8n.wcydtt.co/webhook/bkpostthailand', {
+            headers: {
+              'x-api-key': Bun.env.X_API_KEY
+            }
+          })
+        }
       }
     })
   )
@@ -321,5 +341,3 @@ const app = new Elysia()
 console.log(
   `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
 );
-
-// bkpostthailand

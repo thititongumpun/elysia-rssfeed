@@ -2,26 +2,26 @@ import { Elysia } from 'elysia'
 
 import { AirTableService } from './service'
 import { Api } from 'nocodb-sdk'
+import { NewsItem } from '../../type';
 export const feed = new Elysia({ prefix: '/feed' })
   .get(
     '',
     async () => {
-      // const data = await AirTableService.getList()
       const api = new Api({
-        baseURL: 'xxxxxxxxxx',
+        baseURL: Bun.env.NOCO_BASEURL,
         headers: {
-          'xc-token': 'asdasdsdasd' // or 'xc-token': '<API_TOKEN>'
+          'xc-token': Bun.env.NOCO_APIKEY
         }
       });
 
-
-
-
-      // const tables = await api.dbTable.list('pwqy2nqxf377iwy');
-      // console.log('Tables:', tables);
       const tableData = await api.dbTableRow.list('bkpostthailand', 'pwqy2nqxf377iwy', 'bkpostthailand', {
+        where: '(used,eq,false)',
+        sort: '-pubDate',
         limit: 10
       })
-      console.log(tableData)
+
+      const rows = tableData.list as NewsItem[];
+
+      return rows;
     }
   )
