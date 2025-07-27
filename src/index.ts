@@ -56,7 +56,7 @@ const app = new Elysia()
         const existingTitlesMap = new Map();
         rows.map(record => {
           if (record.title) {
-            existingTitlesMap.set(record.title, record.ncRecordId);
+            existingTitlesMap.set(record.title, record.Id);
           }
         });
 
@@ -191,7 +191,7 @@ const app = new Elysia()
         const existingTitlesMap = new Map();
         rows.map(record => {
           if (record.title) {
-            existingTitlesMap.set(record.title, record.ncRecordId);
+            existingTitlesMap.set(record.title, record.Id);
           }
         });
 
