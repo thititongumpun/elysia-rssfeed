@@ -5,8 +5,13 @@ import Parser from 'rss-parser';
 import * as cheerio from 'cheerio';
 import { feed } from "./modules/feed";
 import cron, { Patterns } from "@elysiajs/cron";
+import { logger } from "@tqman/nice-logger";
 
 const app = new Elysia()
+  .use(logger({
+    mode: 'live',
+    withTimestamp: true
+  }))
   .use(swagger())
   .get("/", () => "Hello Elysia")
   .use(feed)
