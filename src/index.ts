@@ -5,68 +5,19 @@ import Parser from 'rss-parser';
 import * as cheerio from 'cheerio';
 import { feed } from "./modules/feed";
 import cron, { Patterns } from "@elysiajs/cron";
-import { logger } from "@tqman/nice-logger";
+import { logger } from "@bogeychan/elysia-logger";
 
 const app = new Elysia()
-  .use(logger({
-    mode: 'live',
-    withTimestamp: true
-  }))
-  .use(swagger())
-  .get("/", () => "Hello Elysia")
-  .use(feed)
   .use(
-    cron({
-      name: "fetch-news-sports",
-      pattern: Patterns.EVERY_30_MINUTES,
-      run: async () => {
-        console.log(`checking new posts... at ${new Date().toLocaleString('th-TH', {
-          timeZone: 'Asia/Bangkok',
-        })}`);
-        const base = new AirTable({ apiKey: Bun.env.API_KEY }).base('appdVt2WrWyPcSSuA');
-        await base('bangkokpost').select({
-          fields: ['title', 'link', 'imageUrl', 'pubDate', 'used'],
-          filterByFormula: 'NOT({used})',
-          maxRecords: 10,
-          sort: [{
-            field: 'pubDate',
-            direction: 'desc'
-          }]
-        }).eachPage(async (records, fetchNextPage) => {
-          if (records.length > 0) {
-            await fetch('https://n8n.wcydtt.co/webhook/rsspost', {
-              headers: {
-                'x-api-key': Bun.env.X_API_KEY
-              }
-            })
-          }
-          fetchNextPage();
-        })
-
-        console.log(`checking new thailand... at ${new Date().toLocaleString('th-TH', {
-          timeZone: 'Asia/Bangkok',
-        })}`);
-        await base('bkpostthailand').select({
-          fields: ['title', 'link', 'imageUrl', 'pubDate', 'used'],
-          filterByFormula: 'NOT({used})',
-          maxRecords: 10,
-          sort: [{
-            field: 'pubDate',
-            direction: 'desc'
-          }]
-        }).eachPage(async (records, fetchNextPage) => {
-          if (records.length > 0) {
-            await fetch('https://n8n.wcydtt.co/webhook/bkpostthailand', {
-              headers: {
-                'x-api-key': Bun.env.X_API_KEY
-              }
-            })
-          }
-          fetchNextPage();
-        })
-      }
+    logger({
+      level: "error",
     })
   )
+  .use(swagger())
+  .get("/", () => {
+    return "Hello World!"
+  })
+  .use(feed)
   .use(
     cron({
       name: "bangkokpost-job",
@@ -311,6 +262,58 @@ const app = new Elysia()
           console.log('Error during upsert operation:', e);
         }
       },
+    })
+  )
+  .use(
+    cron({
+      name: "fetch-news-sports",
+      pattern: Patterns.EVERY_30_MINUTES,
+      run: async () => {
+        console.log(`checking new posts... at ${new Date().toLocaleString('th-TH', {
+          timeZone: 'Asia/Bangkok',
+        })}`);
+        const base = new AirTable({ apiKey: Bun.env.API_KEY }).base('appdVt2WrWyPcSSuA');
+        await base('bangkokpost').select({
+          fields: ['title', 'link', 'imageUrl', 'pubDate', 'used'],
+          filterByFormula: 'NOT({used})',
+          maxRecords: 10,
+          sort: [{
+            field: 'pubDate',
+            direction: 'desc'
+          }]
+        }).eachPage(async (records, fetchNextPage) => {
+          if (records.length > 0) {
+            await fetch('https://n8n.wcydtt.co/webhook/rsspost', {
+              headers: {
+                'x-api-key': Bun.env.X_API_KEY
+              }
+            })
+          }
+          fetchNextPage();
+        })
+
+        console.log(`checking new thailand... at ${new Date().toLocaleString('th-TH', {
+          timeZone: 'Asia/Bangkok',
+        })}`);
+        await base('bkpostthailand').select({
+          fields: ['title', 'link', 'imageUrl', 'pubDate', 'used'],
+          filterByFormula: 'NOT({used})',
+          maxRecords: 10,
+          sort: [{
+            field: 'pubDate',
+            direction: 'desc'
+          }]
+        }).eachPage(async (records, fetchNextPage) => {
+          if (records.length > 0) {
+            await fetch('https://n8n.wcydtt.co/webhook/bkpostthailand', {
+              headers: {
+                'x-api-key': Bun.env.X_API_KEY
+              }
+            })
+          }
+          fetchNextPage();
+        })
+      }
     })
   )
   .listen(3000);
