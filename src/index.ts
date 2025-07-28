@@ -159,11 +159,12 @@ const app = new Elysia()
   .use(
     cron({
       name: "rss-job",
-      pattern: Patterns.EVERY_3_HOURS,
+      pattern: Patterns.EVERY_5_SECONDS,
+      // pattern: Patterns.EVERY_3_HOURS,
       timezone: "Asia/Bangkok",
       run: async () => {
         const parser = new Parser();
-        const feed = await parser.parseURL('https://bangkokpost-proxy.thiti180536842.workers.dev');
+        const feed = await parser.parseURL('https://bangkokpost-proxy.thiti180536842.workers.dev/');
         const entries = {
           items: feed.items.map(item => {
             return {
@@ -241,7 +242,6 @@ const app = new Elysia()
             used: false
           }
         })
-
 
         const updateRecords = data.filter(item => item.isExisting).map(item => {
           return {
