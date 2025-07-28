@@ -1,6 +1,5 @@
 import { Elysia } from "elysia";
 import { swagger } from '@elysiajs/swagger';
-import AirTable from 'airtable'
 import Parser from 'rss-parser';
 import * as cheerio from 'cheerio';
 import { feed } from "./modules/feed";
@@ -47,8 +46,7 @@ const app = new Elysia()
         });
 
         const existingRecords = await api.dbTableRow.list('bkpostthailand', 'pwqy2nqxf377iwy', 'bkpostthailand', {
-          sort: '-pubDate',
-          limit: 10
+          sort: '-pubDate'
         })
 
         // Create a map of existing titles to their record IDs
@@ -159,8 +157,7 @@ const app = new Elysia()
   .use(
     cron({
       name: "rss-job",
-      pattern: Patterns.EVERY_5_SECONDS,
-      // pattern: Patterns.EVERY_3_HOURS,
+      pattern: Patterns.EVERY_3_HOURS,
       timezone: "Asia/Bangkok",
       run: async () => {
         const parser = new Parser();
@@ -183,8 +180,7 @@ const app = new Elysia()
         });
 
         const existingRecords = await api.dbTableRow.list('bangkokpost', 'pwqy2nqxf377iwy', 'bangkokpost', {
-          sort: '-pubDate',
-          limit: 10
+          sort: '-pubDate'
         })
 
         // Create a map of existing titles to their record IDs
