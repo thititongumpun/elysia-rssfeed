@@ -120,7 +120,7 @@ const app = new Elysia()
         try {
           // Create new records
           if (newRecords.length > 0) {
-            console.log(`Creating ${newRecords.length} new records... at ${new Date().toLocaleString('th-TH', {
+            console.log(`Creating new records... at ${new Date().toLocaleString('th-TH', {
               timeZone: 'Asia/Bangkok',
             })}`);
             await api.dbTableRow.bulkCreate(
@@ -145,9 +145,7 @@ const app = new Elysia()
               'bkpostthailand',
               updateRecords,
             )
-            console.log(`thailandpost 
-              ${JSON.stringify(updateRecords)}
-              Existing records updated successfully`);
+            console.log(`thailandpost Existing records updated successfully`);
           }
 
           if (newRecords.length === 0 && updateRecords.length === 0) {
