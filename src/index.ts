@@ -129,7 +129,9 @@ const app = new Elysia()
               'bkpostthailand',
               newRecords
             )
-            console.log('thailandpost New records created successfully');
+            console.log(`thailandpost   
+              ${JSON.stringify(newRecords)}
+              New records created successfully`);
           }
 
           // Update existing records
@@ -143,7 +145,9 @@ const app = new Elysia()
               'bkpostthailand',
               updateRecords,
             )
-            console.log('thailandpost Existing records updated successfully');
+            console.log(`thailandpost 
+              ${JSON.stringify(updateRecords)}
+              Existing records updated successfully`);
           }
 
           if (newRecords.length === 0 && updateRecords.length === 0) {
