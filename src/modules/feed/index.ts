@@ -1,8 +1,8 @@
 import { Elysia } from 'elysia'
 
-import { AirTableService } from './service'
 import { Api } from 'nocodb-sdk'
 import { NewsItem } from '../../type';
+
 export const feed = new Elysia({ prefix: '/feed' })
   .get(
     '',

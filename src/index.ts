@@ -46,6 +46,7 @@ const app = new Elysia()
         });
 
         const existingRecords = await api.dbTableRow.list('bkpostthailand', 'pwqy2nqxf377iwy', 'bkpostthailand', {
+          limit: 1000,
           sort: '-pubDate'
         })
 
@@ -180,6 +181,7 @@ const app = new Elysia()
         });
 
         const existingRecords = await api.dbTableRow.list('bangkokpost', 'pwqy2nqxf377iwy', 'bangkokpost', {
+          limit: 1000,
           sort: '-pubDate'
         })
 
