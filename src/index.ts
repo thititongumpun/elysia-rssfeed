@@ -30,13 +30,14 @@ const app = new Elysia()
         const entries = {
           items: feed.items.map(item => {
             return {
-              title: item.title,
+              title: item.title?.trim(),
               link: item.link,
               description: item.content,
               pubDate: item.pubDate
             }
           })
         }
+
 
         const api = new Api({
           baseURL: Bun.env.NOCO_BASEURL,
