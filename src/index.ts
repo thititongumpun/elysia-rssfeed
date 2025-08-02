@@ -274,7 +274,7 @@ const app = new Elysia()
   .use(
     cron({
       name: "cars-job",
-      pattern: Patterns.EVERY_HOUR,
+      pattern: Patterns.everyHoursAt(3, 15),
       timezone: "Asia/Bangkok",
       run: async () => {
         const entries = await feedParser('https://www.motor1.com/rss/news/all/')
