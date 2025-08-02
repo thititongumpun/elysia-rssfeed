@@ -213,7 +213,7 @@ const app = new Elysia()
           })
         );
 
-        const newRecords = data.filter(item => !item.isExisting).map(item => {
+        const newRecords = data.filter(item => !item.isExisting && !item.imageUrl?.includes("proxy")).map(item => {
           return {
             title: item.title,
             link: item.link,
@@ -223,7 +223,7 @@ const app = new Elysia()
           }
         })
 
-        const updateRecords = data.filter(item => item.isExisting).map(item => {
+        const updateRecords = data.filter(item => item.isExisting && !item.imageUrl?.includes("proxy")).map(item => {
           return {
             id: item.recordId,
             title: item.title,
