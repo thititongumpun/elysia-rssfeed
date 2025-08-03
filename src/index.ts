@@ -418,7 +418,7 @@ const app = new Elysia()
           limit: 10
         })
         if (bangkokpostData.list.length > 0) {
-          await fetch('https://n8n.wcydtt.co/webhook/rsspost', {
+          await fetch('https://n8n.thitit.beer/webhook/rsspost', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
             }
@@ -434,7 +434,7 @@ const app = new Elysia()
           limit: 10
         })
         if (bkpostthailandData.list.length > 0) {
-          await fetch('https://n8n.wcydtt.co/webhook/bkpostthailand', {
+          await fetch('https://n8n.thitit.beer/webhook/bkpostthailand', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
             }
@@ -450,7 +450,7 @@ const app = new Elysia()
           limit: 10
         })
         if (carsData.list.length > 0) {
-          await fetch('https://n8n.wcydtt.co/webhook/cars', {
+          await fetch('https://n8n.thitit.beer/webhook/cars', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
             }
