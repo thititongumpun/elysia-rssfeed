@@ -10,7 +10,7 @@ export const feed = new Elysia({ prefix: '/feed' })
   .get(
     '',
     async () => {
-      const entries = await feedParser('https://www.motor1.com/rss/news/all/')
+      const entries = await feedParser('https://www.onefc.com/feed/')
 
       const api = new Api({
         baseURL: Bun.env.NOCO_BASEURL,
@@ -19,7 +19,8 @@ export const feed = new Elysia({ prefix: '/feed' })
         }
       });
 
-      const existingRecords = await api.dbTableRow.list('cars', 'pwqy2nqxf377iwy', 'cars', {
+
+      const existingRecords = await api.dbTableRow.list('one', 'pwqy2nqxf377iwy', 'one', {
         limit: 1000,
         sort: '-pubDate'
       })
@@ -71,7 +72,6 @@ export const feed = new Elysia({ prefix: '/feed' })
         })
       );
 
-      console.log(data);
       const newRecords = data.filter(item => !item.isExisting && !item.imageUrl?.includes("proxy")).map(item => {
         return {
           title: item.title,
@@ -100,12 +100,12 @@ export const feed = new Elysia({ prefix: '/feed' })
             timeZone: 'Asia/Bangkok',
           })}`);
           await api.dbTableRow.bulkCreate(
-            'cars',
+            'one',
             'pwqy2nqxf377iwy',
-            'cars',
+            'one',
             newRecords
           )
-          console.log(`cars   
+          console.log(`ONE Championship   
                     ${JSON.stringify(newRecords)}
                     New records created successfully`);
         }
@@ -116,12 +116,12 @@ export const feed = new Elysia({ prefix: '/feed' })
             timeZone: 'Asia/Bangkok',
           })} `);
           await api.dbTableRow.bulkUpdate(
-            'cars',
+            'one',
             'pwqy2nqxf377iwy',
-            'cars',
+            'one',
             updateRecords,
           )
-          console.log(`cars Existing records updated successfully`);
+          console.log(`ONE Championship ${updateRecords.length} Existing records updated successfully`);
         }
 
         if (newRecords.length === 0 && updateRecords.length === 0) {

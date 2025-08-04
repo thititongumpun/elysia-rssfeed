@@ -273,6 +273,133 @@ const app = new Elysia()
   )
   .use(
     cron({
+      name: "one-job",
+      pattern: Patterns.everyHoursAt(3, 15),
+      timezone: "Asia/Bangkok",
+      run: async () => {
+        const entries = await feedParser('https://www.onefc.com/feed/')
+
+        const api = new Api({
+          baseURL: Bun.env.NOCO_BASEURL,
+          headers: {
+            'xc-token': Bun.env.NOCO_APIKEY
+          }
+        });
+
+        const existingRecords = await api.dbTableRow.list('one', 'pwqy2nqxf377iwy', 'one', {
+          limit: 1000,
+          sort: '-pubDate'
+        })
+
+        // Create a map of existing titles to their record IDs
+        const rows = existingRecords.list as NewsItem[];
+        const existingTitlesMap = new Map();
+        rows.map(record => {
+          if (record.title) {
+            existingTitlesMap.set(record.title, record.Id);
+          }
+        });
+
+        const data = await Promise.all(
+          entries!.map(async (item) => {
+            try {
+              const response = await fetch(item.link!);
+              const html = await response.text();
+              const $ = cheerio.load(html);
+
+              const ogImage = $('meta[property="og:image"]').attr('content');
+              const imgSrcs: string[] = [];
+              $('img').each((i, elem) => {
+                const src = $(elem).attr('src');
+                if (src) imgSrcs.push(src);
+              });
+              const twitterImage = $('meta[name="twitter:image"]').attr('content');
+
+              return {
+                title: item.title,
+                link: item.link,
+                imageUrl: ogImage || twitterImage || imgSrcs[0],
+                pubDate: item.pubDate,
+                isExisting: existingTitlesMap.has(item.title),
+                recordId: existingTitlesMap.get(item.title)
+              };
+            } catch (error) {
+              console.error(`Error processing ${item.link}:`, error);
+              return {
+                title: item.title,
+                link: item.link,
+                imageUrl: null,
+                pubDate: item.pubDate,
+                isExisting: existingTitlesMap.has(item.title),
+                recordId: existingTitlesMap.get(item.title)
+              };
+            }
+          })
+        );
+
+        const newRecords = data.filter(item => !item.isExisting && !item.imageUrl?.includes("proxy")).map(item => {
+          return {
+            title: item.title,
+            link: item.link,
+            imageUrl: item.imageUrl,
+            pubDate: item.pubDate,
+            used: false
+          }
+        })
+
+
+        const updateRecords = data.filter(item => item.isExisting && !item.imageUrl?.includes("proxy")).map(item => {
+          return {
+            id: item.recordId,
+            title: item.title,
+            link: item.link,
+            imageUrl: item.imageUrl,
+            pubDate: item.pubDate
+          }
+        })
+
+        try {
+          // Create new records
+          if (newRecords.length > 0) {
+            console.log(`Creating new records... at ${new Date().toLocaleString('th-TH', {
+              timeZone: 'Asia/Bangkok',
+            })}`);
+            await api.dbTableRow.bulkCreate(
+              'one',
+              'pwqy2nqxf377iwy',
+              'one',
+              newRecords
+            )
+            console.log(`ONE Championship   
+                                ${JSON.stringify(newRecords)}
+                                New records created successfully`);
+          }
+
+          // Update existing records
+          if (updateRecords.length > 0) {
+            console.log(`Updating ${updateRecords.length} existing records... at ${new Date().toLocaleString('th-TH', {
+              timeZone: 'Asia/Bangkok',
+            })} `);
+            await api.dbTableRow.bulkUpdate(
+              'one',
+              'pwqy2nqxf377iwy',
+              'one',
+              updateRecords,
+            )
+            console.log(`cars Existing records updated successfully`);
+          }
+
+          if (newRecords.length === 0 && updateRecords.length === 0) {
+            console.log('No records to process');
+          }
+        } catch (e) {
+          console.log('Error during upsert operation:', e);
+        }
+      }
+    })
+  )
+  .use(
+    cron({
       name: "cars-job",
       pattern: Patterns.everyHoursAt(3, 15),
       timezone: "Asia/Bangkok",
@@ -451,6 +578,22 @@ const app = new Elysia()
         })
         if (carsData.list.length > 0) {
           await fetch('https://n8n.thitit.beer/webhook/cars', {
+            headers: {
+              'x-api-key': Bun.env.X_API_KEY
+            }
+          })
+        }
+
+        console.log(`checking ONE Championship news... at ${new Date().toLocaleString('th-TH', {
+          timeZone: 'Asia/Bangkok',
+        })}`);
+        const oneData = await api.dbTableRow.list('one', 'pwqy2nqxf377iwy', 'one', {
+          where: '(used,eq,false)',
+          sort: '-pubDate',
+          limit: 10
+        })
+        if (oneData.list.length > 0) {
+          await fetch('https://n8n.thitit.beer/webhook/one', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
             }
