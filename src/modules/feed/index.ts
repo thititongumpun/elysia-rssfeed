@@ -10,7 +10,7 @@ export const feed = new Elysia({ prefix: '/feed' })
   .get(
     '',
     async () => {
-      const entries = await feedParser('https://www.onefc.com/feed/')
+      const entries = await feedParser('https://bangkokposteng-proxy.thiti180536842.workers.dev/')
 
       const api = new Api({
         baseURL: Bun.env.NOCO_BASEURL,
@@ -19,8 +19,7 @@ export const feed = new Elysia({ prefix: '/feed' })
         }
       });
 
-
-      const existingRecords = await api.dbTableRow.list('one', 'pwqy2nqxf377iwy', 'one', {
+      const existingRecords = await api.dbTableRow.list('bkposteng', 'pwqy2nqxf377iwy', 'bkposteng', {
         limit: 1000,
         sort: '-pubDate'
       })
@@ -33,7 +32,6 @@ export const feed = new Elysia({ prefix: '/feed' })
           existingTitlesMap.set(record.title, record.Id);
         }
       });
-
 
       const data = await Promise.all(
         entries!.map(async (item) => {
@@ -100,12 +98,12 @@ export const feed = new Elysia({ prefix: '/feed' })
             timeZone: 'Asia/Bangkok',
           })}`);
           await api.dbTableRow.bulkCreate(
-            'one',
+            'bkposteng',
             'pwqy2nqxf377iwy',
-            'one',
+            'bkposteng',
             newRecords
           )
-          console.log(`ONE Championship   
+          console.log(`engpost   
                     ${JSON.stringify(newRecords)}
                     New records created successfully`);
         }
@@ -116,12 +114,12 @@ export const feed = new Elysia({ prefix: '/feed' })
             timeZone: 'Asia/Bangkok',
           })} `);
           await api.dbTableRow.bulkUpdate(
-            'one',
+            'bkposteng',
             'pwqy2nqxf377iwy',
-            'one',
+            'bkposteng',
             updateRecords,
           )
-          console.log(`ONE Championship ${updateRecords.length} Existing records updated successfully`);
+          console.log(`engpost Existing records updated successfully`);
         }
 
         if (newRecords.length === 0 && updateRecords.length === 0) {

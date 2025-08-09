@@ -404,7 +404,7 @@ const app = new Elysia()
       pattern: Patterns.everyHoursAt(3, 15),
       timezone: "Asia/Bangkok",
       run: async () => {
-        const entries = await feedParser('https://www.motor1.com/rss/news/all/')
+        const entries = await feedParser('https://bangkokposteng-proxy.thiti180536842.workers.dev/')
 
         const api = new Api({
           baseURL: Bun.env.NOCO_BASEURL,
@@ -413,7 +413,7 @@ const app = new Elysia()
           }
         });
 
-        const existingRecords = await api.dbTableRow.list('cars', 'pwqy2nqxf377iwy', 'cars', {
+        const existingRecords = await api.dbTableRow.list('bkposteng', 'pwqy2nqxf377iwy', 'bkposteng', {
           limit: 1000,
           sort: '-pubDate'
         })
@@ -492,14 +492,14 @@ const app = new Elysia()
               timeZone: 'Asia/Bangkok',
             })}`);
             await api.dbTableRow.bulkCreate(
-              'cars',
+              'bkposteng',
               'pwqy2nqxf377iwy',
-              'cars',
+              'bkposteng',
               newRecords
             )
-            console.log(`cars   
-                    ${JSON.stringify(newRecords)}
-                    New records created successfully`);
+            console.log(`engpost   
+                          ${JSON.stringify(newRecords)}
+                          New records created successfully`);
           }
 
           // Update existing records
@@ -508,12 +508,12 @@ const app = new Elysia()
               timeZone: 'Asia/Bangkok',
             })} `);
             await api.dbTableRow.bulkUpdate(
-              'cars',
+              'bkposteng',
               'pwqy2nqxf377iwy',
-              'cars',
+              'bkposteng',
               updateRecords,
             )
-            console.log(`cars Existing records updated successfully`);
+            console.log(`engpost Existing records updated successfully`);
           }
 
           if (newRecords.length === 0 && updateRecords.length === 0) {
@@ -568,16 +568,16 @@ const app = new Elysia()
           })
         }
 
-        console.log(`checking cars news... at ${new Date().toLocaleString('th-TH', {
+        console.log(`checking bkposteng news... at ${new Date().toLocaleString('th-TH', {
           timeZone: 'Asia/Bangkok',
         })}`);
-        const carsData = await api.dbTableRow.list('cars', 'pwqy2nqxf377iwy', 'cars', {
+        const carsData = await api.dbTableRow.list('bkposteng', 'pwqy2nqxf377iwy', 'bkposteng', {
           where: '(used,eq,false)',
           sort: '-pubDate',
           limit: 10
         })
         if (carsData.list.length > 0) {
-          await fetch('https://n8n.thitit.beer/webhook/cars', {
+          await fetch('https://n8n.thitit.beer/webhook/bkposteng', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
             }
