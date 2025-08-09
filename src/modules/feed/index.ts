@@ -10,7 +10,7 @@ export const feed = new Elysia({ prefix: '/feed' })
   .get(
     '',
     async () => {
-      const entries = await feedParser('https://bangkokposteng-proxy.thiti180536842.workers.dev/')
+      const entries = await feedParser('https://bangkokpostlife-proxy.thiti180536842.workers.dev/')
 
       const api = new Api({
         baseURL: Bun.env.NOCO_BASEURL,
@@ -19,7 +19,7 @@ export const feed = new Elysia({ prefix: '/feed' })
         }
       });
 
-      const existingRecords = await api.dbTableRow.list('bkposteng', 'pwqy2nqxf377iwy', 'bkposteng', {
+      const existingRecords = await api.dbTableRow.list('life', 'pwqy2nqxf377iwy', 'life', {
         limit: 1000,
         sort: '-pubDate'
       })
@@ -98,9 +98,9 @@ export const feed = new Elysia({ prefix: '/feed' })
             timeZone: 'Asia/Bangkok',
           })}`);
           await api.dbTableRow.bulkCreate(
-            'bkposteng',
+            'life',
             'pwqy2nqxf377iwy',
-            'bkposteng',
+            'life',
             newRecords
           )
           console.log(`engpost   
@@ -114,9 +114,9 @@ export const feed = new Elysia({ prefix: '/feed' })
             timeZone: 'Asia/Bangkok',
           })} `);
           await api.dbTableRow.bulkUpdate(
-            'bkposteng',
+            'life',
             'pwqy2nqxf377iwy',
-            'bkposteng',
+            'life',
             updateRecords,
           )
           console.log(`engpost Existing records updated successfully`);

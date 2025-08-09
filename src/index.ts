@@ -404,7 +404,7 @@ const app = new Elysia()
       pattern: Patterns.everyHoursAt(3, 15),
       timezone: "Asia/Bangkok",
       run: async () => {
-        const entries = await feedParser('https://bangkokposteng-proxy.thiti180536842.workers.dev/')
+        const entries = await feedParser('https://bangkokpostlife-proxy.thiti180536842.workers.dev/')
 
         const api = new Api({
           baseURL: Bun.env.NOCO_BASEURL,
@@ -413,7 +413,7 @@ const app = new Elysia()
           }
         });
 
-        const existingRecords = await api.dbTableRow.list('bkposteng', 'pwqy2nqxf377iwy', 'bkposteng', {
+        const existingRecords = await api.dbTableRow.list('life', 'pwqy2nqxf377iwy', 'life', {
           limit: 1000,
           sort: '-pubDate'
         })
@@ -492,9 +492,9 @@ const app = new Elysia()
               timeZone: 'Asia/Bangkok',
             })}`);
             await api.dbTableRow.bulkCreate(
-              'bkposteng',
+              'life',
               'pwqy2nqxf377iwy',
-              'bkposteng',
+              'life',
               newRecords
             )
             console.log(`engpost   
@@ -508,9 +508,9 @@ const app = new Elysia()
               timeZone: 'Asia/Bangkok',
             })} `);
             await api.dbTableRow.bulkUpdate(
-              'bkposteng',
+              'life',
               'pwqy2nqxf377iwy',
-              'bkposteng',
+              'life',
               updateRecords,
             )
             console.log(`engpost Existing records updated successfully`);
@@ -568,16 +568,16 @@ const app = new Elysia()
           })
         }
 
-        console.log(`checking bkposteng news... at ${new Date().toLocaleString('th-TH', {
+        console.log(`checking life news... at ${new Date().toLocaleString('th-TH', {
           timeZone: 'Asia/Bangkok',
         })}`);
-        const carsData = await api.dbTableRow.list('bkposteng', 'pwqy2nqxf377iwy', 'bkposteng', {
+        const carsData = await api.dbTableRow.list('life', 'pwqy2nqxf377iwy', 'life', {
           where: '(used,eq,false)',
           sort: '-pubDate',
           limit: 10
         })
         if (carsData.list.length > 0) {
-          await fetch('https://n8n.thitit.beer/webhook/bkposteng', {
+          await fetch('https://n8n.thitit.beer/webhook/life', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
             }
