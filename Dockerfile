@@ -29,8 +29,10 @@ FROM oven/bun:alpine
 
 WORKDIR /app
 
-# Install curl in the final image for healthcheck
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl ca-certificates && \
+    wget -O /usr/local/share/ca-certificates/cloudflare-origin-ca.crt \
+    https://developers.cloudflare.com/ssl/static/origin_ca_ecc_root.pem && \
+    update-ca-certificates
 
 COPY --from=build /app/server server
 
