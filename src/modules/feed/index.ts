@@ -2,7 +2,6 @@ import { Elysia } from 'elysia'
 
 import { Api } from 'nocodb-sdk'
 import { NewsItem } from '../../type';
-import Parser from 'rss-parser';
 import * as cheerio from 'cheerio';
 import { feedParser } from '../../utils';
 
@@ -10,7 +9,7 @@ export const feed = new Elysia({ prefix: '/feed' })
   .get(
     '',
     async () => {
-      const entries = await feedParser('https://bangkokpostlife-proxy.thiti180536842.workers.dev/')
+      const entries = await feedParser('https://rssfeeds.sanook.com/rss/feeds/sanook/news.entertain.xml')
 
       const api = new Api({
         baseURL: Bun.env.NOCO_BASEURL,
@@ -19,7 +18,7 @@ export const feed = new Elysia({ prefix: '/feed' })
         }
       });
 
-      const existingRecords = await api.dbTableRow.list('life', 'pwqy2nqxf377iwy', 'life', {
+      const existingRecords = await api.dbTableRow.list('sanook', 'pwqy2nqxf377iwy', 'sanook', {
         limit: 1000,
         sort: '-pubDate'
       })
@@ -91,6 +90,7 @@ export const feed = new Elysia({ prefix: '/feed' })
         }
       })
 
+
       try {
         // Create new records
         if (newRecords.length > 0) {
@@ -98,9 +98,9 @@ export const feed = new Elysia({ prefix: '/feed' })
             timeZone: 'Asia/Bangkok',
           })}`);
           await api.dbTableRow.bulkCreate(
-            'life',
+            'sanook',
             'pwqy2nqxf377iwy',
-            'life',
+            'sanook',
             newRecords
           )
           console.log(`engpost   
@@ -114,9 +114,9 @@ export const feed = new Elysia({ prefix: '/feed' })
             timeZone: 'Asia/Bangkok',
           })} `);
           await api.dbTableRow.bulkUpdate(
-            'life',
+            'sanook',
             'pwqy2nqxf377iwy',
-            'life',
+            'sanook',
             updateRecords,
           )
           console.log(`engpost Existing records updated successfully`);
