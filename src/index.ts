@@ -699,12 +699,12 @@ const app = new Elysia()
         console.log(`checking life news... at ${new Date().toLocaleString('th-TH', {
           timeZone: 'Asia/Bangkok',
         })}`);
-        const carsData = await api.dbTableRow.list('life', 'pwqy2nqxf377iwy', 'life', {
+        const lifeData = await api.dbTableRow.list('life', 'pwqy2nqxf377iwy', 'life', {
           where: '(used,eq,false)',
           sort: '-pubDate',
           limit: 10
         })
-        if (carsData.list.length > 0) {
+        if (lifeData.list.length > 0) {
           await fetch('https://n8n.thitit.beer/webhook/life', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
@@ -715,12 +715,12 @@ const app = new Elysia()
         console.log(`checking Sanook news... at ${new Date().toLocaleString('th-TH', {
           timeZone: 'Asia/Bangkok',
         })}`);
-        const carsData = await api.dbTableRow.list('sanook', 'pwqy2nqxf377iwy', 'sanook', {
+        const sanookData = await api.dbTableRow.list('sanook', 'pwqy2nqxf377iwy', 'sanook', {
           where: '(used,eq,false)',
           sort: '-pubDate',
           limit: 10
         })
-        if (carsData.list.length > 0) {
+        if (sanookData.list.length > 0) {
           await fetch('https://n8n.thitit.beer/webhook/sanook', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
