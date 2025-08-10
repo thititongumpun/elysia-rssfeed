@@ -721,7 +721,7 @@ const app = new Elysia()
           limit: 10
         })
         if (sanookData.list.length > 0) {
-          await fetch('https://n8n.thitit.beer/webhook/sanook', {
+          await fetch('https://n8n.thitit.beer/webhook/snn', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
             }
