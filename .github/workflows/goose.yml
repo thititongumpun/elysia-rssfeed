@@ -3,6 +3,7 @@ name: Goose Code Review with Gemini
 on:
   pull_request:
     types: [opened, synchronize, reopened, labeled]
+  workflow_dispatch: 
 
 permissions:
   contents: read
