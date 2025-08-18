@@ -1,81 +1,192 @@
-name: Goose
+name: Goose Code Review with Gemini
 
 on:
   pull_request:
-      types: [opened, synchronize, reopened, labeled]
+    types: [opened, synchronize, reopened, labeled]
+  workflow_dispatch: 
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
   issues: write
 
 env:
-  PROVIDER_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
   PR_NUMBER: ${{ github.event.pull_request.number }}
 
 jobs:
-  goose-comment:
+  goose-code-review:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Gather PR information
+      - name: Gather PR information and file contents
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-              {
-              echo "# Files Changed"
-              gh pr view $PR_NUMBER --json files \
-                  -q '.files[] | "* " + .path + " (" + (.additions|tostring) + " additions, " + (.deletions|tostring) + " deletions)"'
-              echo ""
-              echo "# Changes Summary"
-              gh pr diff $PR_NUMBER
-              } > changes.txt
+          {
+            echo "# Pull Request Information"
+            echo "**Title:** ${{ github.event.pull_request.title }}"
+            echo "**Description:** ${{ github.event.pull_request.body }}"
+            echo ""
+            echo "# Files Changed"
+            gh pr view $PR_NUMBER --json files \
+              -q '.files[] | "* " + .path + " (" + (.additions|tostring) + " additions, " + (.deletions|tostring) + " deletions)"'
+            echo ""
+            echo "# Diff Summary"
+            gh pr diff $PR_NUMBER
+            echo ""
+            echo "# Complete File Contents (for context)"
+            gh pr view $PR_NUMBER --json files -q '.files[].path' | while read file; do
+              if [[ -f "$file" && $(wc -l < "$file") -lt 500 ]]; then
+                echo ""
+                echo "## 📁 File: $file"
+                echo '```'
+                cat "$file"
+                echo '```'
+              elif [[ -f "$file" ]]; then
+                echo ""
+                echo "## 📁 File: $file (Large file - showing first 100 lines)"
+                echo '```'
+                head -100 "$file"
+                echo '```'
+              fi
+            done
+          } > changes.txt
 
       - name: Install Goose CLI
         run: |
-              mkdir -p /home/runner/.local/bin
-              curl -fsSL https://github.com/block/goose/releases/download/stable/download_cli.sh \
-              | CONFIGURE=false INSTALL_PATH=/home/runner/.local/bin bash
-              echo "/home/runner/.local/bin" >> $GITHUB_PATH
+          mkdir -p /home/runner/.local/bin
+          curl -fsSL https://github.com/block/goose/releases/download/stable/download_cli.sh \
+            | CONFIGURE=false INSTALL_PATH=/home/runner/.local/bin bash
+          echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: Configure Goose
+      - name: Configure Goose for Gemini
         run: |
-              mkdir -p ~/.config/goose
-              cat <<EOF > ~/.config/goose/config.yaml
-              GOOSE_PROVIDER: Gemini
-              GOOSE_MODEL: gemini-2.5-flash
-              keyring: false
-              EOF
+          mkdir -p ~/.config/goose
+          cat <<EOF > ~/.config/goose/config.yaml
+          GOOSE_PROVIDER: google
+          GOOSE_MODEL: gemini-2.0-flash-exp
+          keyring: false
+          EOF
 
-      - name: Create instructions for Goose
+      - name: Create comprehensive code review instructions
         run: |
-              cat <<EOF > instructions.txt
-              Create a summary of the changes provided. Don't provide any session or logging details.
-              The summary for each file should be brief and structured as:
-              <filename/path (wrapped in backticks)>
-                  - dot points of changes
-              You don't need any extensions, don't mention extensions at all.
-              The changes to summarise are:
-              $(cat changes.txt)
-              EOF
+          cat <<EOF > instructions.txt
+          You are an expert code reviewer. Please perform a comprehensive and constructive code review of the provided changes.
 
-      - name: Test
-        run: cat instructions.txt
+          ## Review Guidelines:
+          1. **Code Quality & Best Practices**
+             - Check for coding standards compliance
+             - Identify potential improvements in code structure
+             - Look for proper error handling
+             - Verify naming conventions
 
-      - name: Run Goose and filter output
+          2. **Security & Performance**
+             - Identify potential security vulnerabilities
+             - Look for performance bottlenecks
+             - Check for proper input validation
+             - Review resource management
+
+          3. **Maintainability & Readability**
+             - Assess code clarity and documentation
+             - Check for code duplication
+             - Evaluate function/class design
+             - Review comment quality
+
+          4. **Testing & Quality Assurance**
+             - Suggest areas that need testing
+             - Identify edge cases
+             - Check for proper test coverage
+
+          ## Output Format:
+          Please structure your review as follows:
+
+          ### 🔍 **Overall Assessment**
+          Brief summary of the PR and general code quality.
+
+          ### 📋 **File-by-File Review**
+          For each changed file:
+
+          #### 📁 \`filename\`
+          **Summary:** Brief description of changes
+          **Strengths:** What's done well
+          **Issues:** Any problems found (with severity: 🔴 Critical, 🟡 Minor, 🔵 Suggestion)
+          **Recommendations:** Specific improvement suggestions
+
+          ### ✅ **Action Items**
+          - [ ] Critical issues to fix
+          - [ ] Minor improvements to consider
+          - [ ] Future enhancements to think about
+
+          ### 🎯 **Conclusion**
+          Overall recommendation (Approve/Request Changes/Needs Discussion)
+
+          ## Code to Review:
+          \$(cat changes.txt)
+          EOF
+
+      - name: Debug - Show instructions
         run: |
-              goose run --instructions instructions.txt | \
-              # Remove ANSI color codes
-              sed -E 's/\x1B\[[0-9;]*[mK]//g' | \
-              # Remove session/logging lines
-              grep -v "logging to /home/runner/.config/goose/sessions/" | \
-              grep -v "^starting session" | \
-              grep -v "^Closing session" | \
-              # Trim trailing whitespace
-              sed 's/[[:space:]]*$//' \
-              > pr_comment.txt
+          echo "=== INSTRUCTIONS ==="
+          head -50 instructions.txt
+          echo "=== CHANGES PREVIEW ==="
+          head -50 changes.txt
 
-      - name: Post comment to PR
+      - name: Run Goose code review
         run: |
-              cat -A pr_comment.txt
-              gh pr comment $PR_NUMBER --body-file pr_comment.txt
+          goose run --instructions instructions.txt 2>&1 | \
+            # Remove ANSI color codes
+            sed -E 's/\x1B\[[0-9;]*[mK]//g' | \
+            # Remove session/logging lines
+            grep -v "logging to /home/runner/.config/goose/sessions/" | \
+            grep -v "^starting session" | \
+            grep -v "^Closing session" | \
+            grep -v "^Session saved to" | \
+            # Remove empty lines at start/end
+            sed '/^[[:space:]]*$/d' | \
+            # Trim trailing whitespace
+            sed 's/[[:space:]]*$//' \
+            > pr_review.txt
+
+      - name: Validate review output
+        run: |
+          if [[ ! -s pr_review.txt ]]; then
+            echo "❌ No review output generated" > pr_review.txt
+            echo "The code review process encountered an issue. Please check the workflow logs." >> pr_review.txt
+          else
+            echo "✅ Review generated successfully ($(wc -l < pr_review.txt) lines)"
+          fi
+
+      - name: Post code review comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Add header to the review
+          {
+            echo "## 🤖 Goose AI Code Review (Powered by Gemini)"
+            echo ""
+            echo "---"
+            echo ""
+            cat pr_review.txt
+            echo ""
+            echo "---"
+            echo "*This review was automatically generated by Goose AI using Google Gemini. Please use this as a starting point for your code review process.*"
+          } > final_review.txt
+          
+          # Post the comment
+          gh pr comment $PR_NUMBER --body-file final_review.txt
+
+      - name: Upload artifacts for debugging
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: goose-review-artifacts
+          path: |
+            changes.txt
+            instructions.txt
+            pr_review.txt
+            final_review.txt
