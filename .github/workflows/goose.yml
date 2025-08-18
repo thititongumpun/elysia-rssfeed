@@ -3,7 +3,6 @@ name: Goose Code Review with Gemini
 on:
   pull_request:
     types: [opened, synchronize, reopened, labeled]
-  workflow_dispatch: 
 
 permissions:
   contents: read
@@ -23,25 +22,66 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Gather PR information and file contents
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Gather repository information and file contents
         run: |
           {
-            echo "# Pull Request Information"
-            echo "**Title:** ${{ github.event.pull_request.title }}"
-            echo "**Description:** ${{ github.event.pull_request.body }}"
+            echo "# Repository Code Review"
+            echo "**Branch:** $(git branch --show-current)"
+            echo "**Date:** $(date)"
+            echo "**Repository:** ${{ github.repository }}"
             echo ""
-            echo "# Files Changed"
-            gh pr view $PR_NUMBER --json files \
-              -q '.files[] | "* " + .path + " (" + (.additions|tostring) + " additions, " + (.deletions|tostring) + " deletions)"'
+            echo "# Files to Review"
+            
+            # Find all code files (excluding common non-code files)
+            find . -type f \
+              ! -path "./.git/*" \
+              ! -path "./node_modules/*" \
+              ! -path "./.next/*" \
+              ! -path "./dist/*" \
+              ! -path "./build/*" \
+              ! -path "./.vscode/*" \
+              ! -path "./.idea/*" \
+              ! -path "./vendor/*" \
+              ! -path "./target/*" \
+              ! -path "./.gradle/*" \
+              ! -path "./cmake-build-*/*" \
+              ! -name "*.log" \
+              ! -name "*.lock" \
+              ! -name "*.tmp" \
+              ! -name "*.cache" \
+              ! -name "*.min.js" \
+              ! -name "*.min.css" \
+              ! -name "package-lock.json" \
+              ! -name "yarn.lock" \
+              ! -name "*.png" \
+              ! -name "*.jpg" \
+              ! -name "*.jpeg" \
+              ! -name "*.gif" \
+              ! -name "*.svg" \
+              ! -name "*.ico" \
+              ! -name "*.pdf" \
+              ! -name "*.exe" \
+              ! -name "*.dll" \
+              ! -name "*.so" \
+              -size -100k \
+              | head -30 > files_to_review.txt
+            
+            # Show file list
+            echo "Found $(wc -l < files_to_review.txt) files to review:"
+            while read file; do
+              if [ -f "$file" ]; then
+                lines=$(wc -l < "$file" 2>/dev/null || echo "0")
+                size=$(du -h "$file" 2>/dev/null | cut -f1 || echo "0K")
+                echo "* $file ($lines lines, $size)"
+              fi
+            done < files_to_review.txt
+            
             echo ""
-            echo "# Diff Summary"
-            gh pr diff $PR_NUMBER
-            echo ""
-            echo "# Complete File Contents (for context)"
-            gh pr view $PR_NUMBER --json files -q '.files[].path' | while read file; do
-              if [[ -f "$file" && $(wc -l < "$file") -lt 500 ]]; then
+            echo "# File Contents"
+            
+            # Show content of each file
+            while read file; do
+              if [[ -f "$file" && $(wc -l < "$file" 2>/dev/null || echo "1000") -lt 800 ]]; then
                 echo ""
                 echo "## 📁 File: $file"
                 echo '```'
@@ -49,12 +89,13 @@ jobs:
                 echo '```'
               elif [[ -f "$file" ]]; then
                 echo ""
-                echo "## 📁 File: $file (Large file - showing first 100 lines)"
+                echo "## 📁 File: $file (Large file - showing first 200 lines)"
                 echo '```'
-                head -100 "$file"
+                head -200 "$file"
                 echo '```'
               fi
-            done
+            done < files_to_review.txt
+            
           } > changes.txt
 
       - name: Install Goose CLI
@@ -76,7 +117,7 @@ jobs:
       - name: Create comprehensive code review instructions
         run: |
           cat <<EOF > instructions.txt
-          You are an expert code reviewer. Please perform a comprehensive and constructive code review of the provided changes.
+          You are an expert code reviewer. Please perform a comprehensive and constructive code review of the provided repository files.
 
           ## Review Guidelines:
           1. **Code Quality & Best Practices**
@@ -102,28 +143,39 @@ jobs:
              - Identify edge cases
              - Check for proper test coverage
 
+          5. **Architecture & Design**
+             - Evaluate overall code architecture
+             - Check for proper separation of concerns
+             - Review design patterns usage
+             - Assess scalability considerations
+
           ## Output Format:
           Please structure your review as follows:
 
           ### 🔍 **Overall Assessment**
-          Brief summary of the PR and general code quality.
+          Brief summary of the codebase and general code quality.
 
           ### 📋 **File-by-File Review**
-          For each changed file:
+          For each file:
 
           #### 📁 \`filename\`
-          **Summary:** Brief description of changes
+          **Purpose:** What this file does
           **Strengths:** What's done well
           **Issues:** Any problems found (with severity: 🔴 Critical, 🟡 Minor, 🔵 Suggestion)
           **Recommendations:** Specific improvement suggestions
 
+          ### 🏗️ **Architecture & Design Review**
+          - Overall code organization
+          - Design patterns and architectural decisions
+          - Suggestions for improvement
+
           ### ✅ **Action Items**
-          - [ ] Critical issues to fix
+          - [ ] Critical issues to fix immediately
           - [ ] Minor improvements to consider
           - [ ] Future enhancements to think about
 
           ### 🎯 **Conclusion**
-          Overall recommendation (Approve/Request Changes/Needs Discussion)
+          Overall code quality assessment and recommendations.
 
           ## Code to Review:
           \$(cat changes.txt)
@@ -161,24 +213,45 @@ jobs:
             echo "✅ Review generated successfully ($(wc -l < pr_review.txt) lines)"
           fi
 
-      - name: Post code review comment
+      - name: Create GitHub Issue with review results
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Add header to the review
+          # Create issue title with timestamp
+          ISSUE_TITLE="🤖 Complete Code Review Report - $(date +'%Y-%m-%d %H:%M')"
+          
+          # Prepare issue body
           {
-            echo "## 🤖 Goose AI Code Review (Powered by Gemini)"
+            echo "## 🤖 Complete Repository Code Review"
+            echo ""
+            echo "**Branch:** $(git branch --show-current)"
+            echo "**Repository:** ${{ github.repository }}"
+            echo "**Generated:** $(date)"
+            echo "**Powered by:** Google Gemini via Goose AI"
             echo ""
             echo "---"
             echo ""
             cat pr_review.txt
             echo ""
             echo "---"
-            echo "*This review was automatically generated by Goose AI using Google Gemini. Please use this as a starting point for your code review process.*"
-          } > final_review.txt
+            echo ""
+            echo "### 📋 Files Reviewed ($(wc -l < files_to_review.txt) files)"
+            while read file; do
+              if [ -f "$file" ]; then
+                lines=$(wc -l < "$file" 2>/dev/null || echo "0")
+                size=$(du -h "$file" 2>/dev/null | cut -f1 || echo "0K")
+                echo "- \`$file\` ($lines lines, $size)"
+              fi
+            done < files_to_review.txt
+            echo ""
+            echo "*This comprehensive review was automatically generated by Goose AI using Google Gemini.*"
+          } > issue_body.txt
           
-          # Post the comment
-          gh pr comment $PR_NUMBER --body-file final_review.txt
+          # Create the issue
+          gh issue create \
+            --title "$ISSUE_TITLE" \
+            --body-file issue_body.txt \
+            --label "code-review,automated"
 
       - name: Upload artifacts for debugging
         uses: actions/upload-artifact@v4
@@ -189,4 +262,5 @@ jobs:
             changes.txt
             instructions.txt
             pr_review.txt
-            final_review.txt
+            issue_body.txt
+            files_to_review.txt
