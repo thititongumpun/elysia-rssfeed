@@ -10,6 +10,6 @@ export const feed = new Elysia({ prefix: '/feed' })
           'x-api-key': Bun.env.X_API_KEY
         },
       })
-      console.log(res);
+      return res
     }
   )
