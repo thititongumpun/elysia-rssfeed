@@ -9,6 +9,23 @@ import { Api } from "nocodb-sdk";
 import { NewsItem } from "./type";
 import { feedParser } from "./utils";
 
+// Utility function for consistent logging
+const logInfo = (source: string, message: string, data?: any) => {
+  const timestamp = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
+  console.log(`[${timestamp}] [${source}] ${message}`);
+  if (data) {
+    console.log(JSON.stringify(data, null, 2));
+  }
+};
+
+const logError = (source: string, message: string, error?: any) => {
+  const timestamp = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
+  console.error(`[${timestamp}] [${source}] ERROR: ${message}`);
+  if (error) {
+    console.error(error);
+  }
+};
+
 const app = new Elysia()
   .use(
     logger({
@@ -73,7 +90,7 @@ const app = new Elysia()
                 recordId: existingTitlesMap.get(item.title)
               };
             } catch (error) {
-              console.error(`Error processing ${item.link}:`, error);
+              logError('BANGKOKPOST-JOB', `Failed to process article: ${item.link}`, error);
               return {
                 title: item.title,
                 link: item.link,
@@ -110,39 +127,33 @@ const app = new Elysia()
         try {
           // Create new records
           if (newRecords.length > 0) {
-            console.log(`Creating new records... at ${new Date().toLocaleString('th-TH', {
-              timeZone: 'Asia/Bangkok',
-            })}`);
+            logInfo('BANGKOKPOST-JOB', `Creating ${newRecords.length} new records`);
             await api.dbTableRow.bulkCreate(
               'bkpostthailand',
               'pwqy2nqxf377iwy',
               'bkpostthailand',
               newRecords
             )
-            console.log(`thailandpost   
-              ${JSON.stringify(newRecords)}
-              New records created successfully`);
+            logInfo('BANGKOKPOST-JOB', 'New records created successfully', newRecords.map(r => ({ title: r.title, link: r.link })));
           }
 
           // Update existing records
           if (updateRecords.length > 0) {
-            console.log(`Updating ${updateRecords.length} existing records... at ${new Date().toLocaleString('th-TH', {
-              timeZone: 'Asia/Bangkok',
-            })} `);
+            logInfo('BANGKOKPOST-JOB', `Updating ${updateRecords.length} existing records`);
             await api.dbTableRow.bulkUpdate(
               'bkpostthailand',
               'pwqy2nqxf377iwy',
               'bkpostthailand',
               updateRecords,
             )
-            console.log(`thailandpost Existing records updated successfully`);
+            logInfo('BANGKOKPOST-JOB', 'Existing records updated successfully');
           }
 
           if (newRecords.length === 0 && updateRecords.length === 0) {
-            console.log('No records to process');
+            logInfo('BANGKOKPOST-JOB', 'No records to process');
           }
         } catch (e) {
-          console.log('Error during upsert operation:', e);
+          logError('BANGKOKPOST-JOB', 'Error during upsert operation', e);
         }
       }
     })
@@ -200,7 +211,7 @@ const app = new Elysia()
                 recordId: existingTitlesMap.get(item.title)
               };
             } catch (error) {
-              console.error(`Error processing ${item.link}:`, error);
+              logError('SANOOK-JOB', `Failed to process article: ${item.link}`, error);
               return {
                 title: item.title,
                 link: item.link,
@@ -238,39 +249,33 @@ const app = new Elysia()
         try {
           // Create new records
           if (newRecords.length > 0) {
-            console.log(`Creating new records... at ${new Date().toLocaleString('th-TH', {
-              timeZone: 'Asia/Bangkok',
-            })}`);
+            logInfo('SANOOK-JOB', `Creating ${newRecords.length} new records`);
             await api.dbTableRow.bulkCreate(
               'sanook',
               'pwqy2nqxf377iwy',
               'sanook',
               newRecords
             )
-            console.log(`engpost   
-                            ${JSON.stringify(newRecords)}
-                            New records created successfully`);
+            logInfo('SANOOK-JOB', 'New records created successfully', newRecords.map(r => ({ title: r.title, link: r.link })));
           }
 
           // Update existing records
           if (updateRecords.length > 0) {
-            console.log(`Updating ${updateRecords.length} existing records... at ${new Date().toLocaleString('th-TH', {
-              timeZone: 'Asia/Bangkok',
-            })} `);
+            logInfo('SANOOK-JOB', `Updating ${updateRecords.length} existing records`);
             await api.dbTableRow.bulkUpdate(
               'sanook',
               'pwqy2nqxf377iwy',
               'sanook',
               updateRecords,
             )
-            console.log(`engpost Existing records updated successfully`);
+            logInfo('SANOOK-JOB', 'Existing records updated successfully');
           }
 
           if (newRecords.length === 0 && updateRecords.length === 0) {
-            console.log('No records to process');
+            logInfo('SANOOK-JOB', 'No records to process');
           }
         } catch (e) {
-          console.log('Error during upsert operation:', e);
+          logError('SANOOK-JOB', 'Error during upsert operation', e);
         }
       }
     })
@@ -328,7 +333,7 @@ const app = new Elysia()
                 recordId: existingTitlesMap.get(item.title)
               };
             } catch (error) {
-              console.error(`Error processing ${item.link}:`, error);
+              logError('RSS-JOB', `Failed to process article: ${item.link}`, error);
               return {
                 title: item.title,
                 link: item.link,
@@ -364,37 +369,33 @@ const app = new Elysia()
         try {
           // Create new records
           if (newRecords.length > 0) {
-            console.log(`Creating ${newRecords.length} new records... at ${new Date().toLocaleString('th-TH', {
-              timeZone: 'Asia/Bangkok',
-            })}`);
+            logInfo('RSS-JOB', `Creating ${newRecords.length} new records`);
             await api.dbTableRow.bulkCreate(
               'bangkokpost',
               'pwqy2nqxf377iwy',
               'bangkokpost',
               newRecords
             )
-            console.log('bangkokpost New records created successfully');
+            logInfo('RSS-JOB', 'New records created successfully', newRecords.map(r => ({ title: r.title, link: r.link })));
           }
 
           // Update existing records
           if (updateRecords.length > 0) {
-            console.log(`Updating ${updateRecords.length} existing records... at ${new Date().toLocaleString('th-TH', {
-              timeZone: 'Asia/Bangkok',
-            })} `);
+            logInfo('RSS-JOB', `Updating ${updateRecords.length} existing records`);
             await api.dbTableRow.bulkUpdate(
               'bangkokpost',
               'pwqy2nqxf377iwy',
               'bangkokpost',
               updateRecords,
             )
-            console.log('bangkokpost Existing records updated successfully');
+            logInfo('RSS-JOB', 'Existing records updated successfully');
           }
 
           if (newRecords.length === 0 && updateRecords.length === 0) {
-            console.log('No records to process');
+            logInfo('RSS-JOB', 'No records to process');
           }
         } catch (e) {
-          console.log('Error during upsert operation:', e);
+          logError('RSS-JOB', 'Error during upsert operation', e);
         }
       },
     })
@@ -452,7 +453,7 @@ const app = new Elysia()
                 recordId: existingTitlesMap.get(item.title)
               };
             } catch (error) {
-              console.error(`Error processing ${item.link}:`, error);
+              logError('ONE-JOB', `Failed to process article: ${item.link}`, error);
               return {
                 title: item.title,
                 link: item.link,
@@ -489,39 +490,33 @@ const app = new Elysia()
         try {
           // Create new records
           if (newRecords.length > 0) {
-            console.log(`Creating new records... at ${new Date().toLocaleString('th-TH', {
-              timeZone: 'Asia/Bangkok',
-            })}`);
+            logInfo('ONE-JOB', `Creating ${newRecords.length} new records`);
             await api.dbTableRow.bulkCreate(
               'one',
               'pwqy2nqxf377iwy',
               'one',
               newRecords
             )
-            console.log(`ONE Championship   
-                                ${JSON.stringify(newRecords)}
-                                New records created successfully`);
+            logInfo('ONE-JOB', 'New records created successfully', newRecords.map(r => ({ title: r.title, link: r.link })));
           }
 
           // Update existing records
           if (updateRecords.length > 0) {
-            console.log(`Updating ${updateRecords.length} existing records... at ${new Date().toLocaleString('th-TH', {
-              timeZone: 'Asia/Bangkok',
-            })} `);
+            logInfo('ONE-JOB', `Updating ${updateRecords.length} existing records`);
             await api.dbTableRow.bulkUpdate(
               'one',
               'pwqy2nqxf377iwy',
               'one',
               updateRecords,
             )
-            console.log(`cars Existing records updated successfully`);
+            logInfo('ONE-JOB', 'Existing records updated successfully');
           }
 
           if (newRecords.length === 0 && updateRecords.length === 0) {
-            console.log('No records to process');
+            logInfo('ONE-JOB', 'No records to process');
           }
         } catch (e) {
-          console.log('Error during upsert operation:', e);
+          logError('ONE-JOB', 'Error during upsert operation', e);
         }
       }
     })
@@ -579,7 +574,7 @@ const app = new Elysia()
                 recordId: existingTitlesMap.get(item.title)
               };
             } catch (error) {
-              console.error(`Error processing ${item.link}:`, error);
+              logError('CARS-JOB', `Failed to process article: ${item.link}`, error);
               return {
                 title: item.title,
                 link: item.link,
@@ -616,39 +611,33 @@ const app = new Elysia()
         try {
           // Create new records
           if (newRecords.length > 0) {
-            console.log(`Creating new records... at ${new Date().toLocaleString('th-TH', {
-              timeZone: 'Asia/Bangkok',
-            })}`);
+            logInfo('CARS-JOB', `Creating ${newRecords.length} new records`);
             await api.dbTableRow.bulkCreate(
               'life',
               'pwqy2nqxf377iwy',
               'life',
               newRecords
             )
-            console.log(`engpost   
-                          ${JSON.stringify(newRecords)}
-                          New records created successfully`);
+            logInfo('CARS-JOB', 'New records created successfully', newRecords.map(r => ({ title: r.title, link: r.link })));
           }
 
           // Update existing records
           if (updateRecords.length > 0) {
-            console.log(`Updating ${updateRecords.length} existing records... at ${new Date().toLocaleString('th-TH', {
-              timeZone: 'Asia/Bangkok',
-            })} `);
+            logInfo('CARS-JOB', `Updating ${updateRecords.length} existing records`);
             await api.dbTableRow.bulkUpdate(
               'life',
               'pwqy2nqxf377iwy',
               'life',
               updateRecords,
             )
-            console.log(`engpost Existing records updated successfully`);
+            logInfo('CARS-JOB', 'Existing records updated successfully');
           }
 
           if (newRecords.length === 0 && updateRecords.length === 0) {
-            console.log('No records to process');
+            logInfo('CARS-JOB', 'No records to process');
           }
         } catch (e) {
-          console.log('Error during upsert operation:', e);
+          logError('CARS-JOB', 'Error during upsert operation', e);
         }
       }
     })
@@ -658,96 +647,109 @@ const app = new Elysia()
       name: "fetch-news",
       pattern: Patterns.EVERY_30_MINUTES,
       run: async () => {
-        console.log(`checking news posts... at ${new Date().toLocaleString('th-TH', {
-          timeZone: 'Asia/Bangkok',
-        })}`);
+        logInfo('FETCH-NEWS', 'Starting news check process');
+        
         const api = new Api({
           baseURL: Bun.env.NOCO_BASEURL,
           headers: {
             'xc-token': Bun.env.NOCO_APIKEY
           }
         });
+        
+        // Check Bangkok Post news
+        logInfo('FETCH-NEWS', 'Checking Bangkok Post news');
         const bangkokpostData = await api.dbTableRow.list('bangkokpost', 'pwqy2nqxf377iwy', 'bangkokpost', {
           where: '(used,eq,false)',
           sort: '-pubDate',
           limit: 10
         })
         if (bangkokpostData.list.length > 0) {
+          logInfo('FETCH-NEWS', `Found ${bangkokpostData.list.length} unused Bangkok Post articles, triggering webhook`);
           await fetch('https://n8n.thitit.beer/webhook/rsspost', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
             }
           })
+        } else {
+          logInfo('FETCH-NEWS', 'No unused Bangkok Post articles found');
         }
 
-        console.log(`checking news thailand... at ${new Date().toLocaleString('th-TH', {
-          timeZone: 'Asia/Bangkok',
-        })}`);
+        // Check Bangkok Post Thailand news
+        logInfo('FETCH-NEWS', 'Checking Bangkok Post Thailand news');
         const bkpostthailandData = await api.dbTableRow.list('bkpostthailand', 'pwqy2nqxf377iwy', 'bkpostthailand', {
           where: '(used,eq,false)',
           sort: '-pubDate',
           limit: 10
         })
         if (bkpostthailandData.list.length > 0) {
+          logInfo('FETCH-NEWS', `Found ${bkpostthailandData.list.length} unused Bangkok Post Thailand articles, triggering webhook`);
           await fetch('https://n8n.thitit.beer/webhook/bkpostthailand', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
             }
           })
+        } else {
+          logInfo('FETCH-NEWS', 'No unused Bangkok Post Thailand articles found');
         }
 
-        console.log(`checking life news... at ${new Date().toLocaleString('th-TH', {
-          timeZone: 'Asia/Bangkok',
-        })}`);
+        // Check Life news
+        logInfo('FETCH-NEWS', 'Checking Life news');
         const lifeData = await api.dbTableRow.list('life', 'pwqy2nqxf377iwy', 'life', {
           where: '(used,eq,false)',
           sort: '-pubDate',
           limit: 10
         })
         if (lifeData.list.length > 0) {
+          logInfo('FETCH-NEWS', `Found ${lifeData.list.length} unused Life articles, triggering webhook`);
           await fetch('https://n8n.thitit.beer/webhook/life', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
             }
           })
+        } else {
+          logInfo('FETCH-NEWS', 'No unused Life articles found');
         }
 
-        console.log(`checking Sanook news... at ${new Date().toLocaleString('th-TH', {
-          timeZone: 'Asia/Bangkok',
-        })}`);
+        // Check Sanook news
+        logInfo('FETCH-NEWS', 'Checking Sanook news');
         const sanookData = await api.dbTableRow.list('sanook', 'pwqy2nqxf377iwy', 'sanook', {
           where: '(used,eq,false)',
           sort: '-pubDate',
           limit: 10
         })
         if (sanookData.list.length > 0) {
+          logInfo('FETCH-NEWS', `Found ${sanookData.list.length} unused Sanook articles, triggering webhook`);
           await fetch('https://n8n.thitit.beer/webhook/snn', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
             }
           })
+        } else {
+          logInfo('FETCH-NEWS', 'No unused Sanook articles found');
         }
 
-        console.log(`checking ONE Championship news... at ${new Date().toLocaleString('th-TH', {
-          timeZone: 'Asia/Bangkok',
-        })}`);
+        // Check ONE Championship news
+        logInfo('FETCH-NEWS', 'Checking ONE Championship news');
         const oneData = await api.dbTableRow.list('one', 'pwqy2nqxf377iwy', 'one', {
           where: '(used,eq,false)',
           sort: '-pubDate',
           limit: 10
         })
         if (oneData.list.length > 0) {
+          logInfo('FETCH-NEWS', `Found ${oneData.list.length} unused ONE Championship articles, triggering webhook`);
           await fetch('https://n8n.thitit.beer/webhook/one', {
             headers: {
               'x-api-key': Bun.env.X_API_KEY
             }
           })
+        } else {
+          logInfo('FETCH-NEWS', 'No unused ONE Championship articles found');
         }
+        
+        logInfo('FETCH-NEWS', 'News check process completed');
       }
     })
   )
   .listen(3000);
 
-console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
-);
+logInfo('SERVER', `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
